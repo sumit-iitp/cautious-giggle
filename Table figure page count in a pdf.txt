@@ -1,0 +1,80 @@
+
+package spellchecking;
+import org.apache.pdfbox.pdmodel.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.pdfbox.text.PDFTextStripper;
+
+
+public class mlproject2 
+{
+    
+    public static String GetTextFromPDFFile(String filename) 
+    {
+        String text=null;
+        PDDocument doc = null;
+        String [] sen = null;
+        try
+        {
+            File input=new File(filename);
+            doc=PDDocument.load(input);
+            PDFTextStripper stripper = new PDFTextStripper();
+            stripper.setStartPage(0);
+            stripper.setEndPage(doc.getNumberOfPages()-1);
+            System.out.println(stripper.getText(doc));
+            System.out.println("Total Number Of Pages in the research paper is "+(stripper.getEndPage()+1));
+            text=stripper.getText(doc);
+            doc.close();
+            sen=text.split("[ \t]");
+                   }
+        catch(Exception e)
+        {
+            System.err.println(e);
+        }
+        return text;
+    }
+    public static void main(String[] args)
+    {
+        mlproject2 pdf=new mlproject2();
+           System.out.println("Enter the file name of the research paper ");
+          // String filename=(new Scanner(System.in).nextLine());
+           String data = pdf.GetTextFromPDFFile("test1.pdf");
+        
+        ArrayList<String> figcounts=new ArrayList<>();
+        
+        Matcher mp=Pattern.compile("Figure (\\d)*\\.").matcher(data);
+        while(mp.find())
+        {
+            String matched=mp.group();
+            if(!figcounts.contains(matched))
+                figcounts.add(matched);
+            
+        }
+        //System.out.println("Figcount"+figcounts);
+        Matcher mp2=Pattern.compile("Figure (\\d)*[ )]").matcher(data);
+        boolean bfigs[]=new boolean [figcounts.size()];
+        
+        while(mp2.find())
+        {
+            String matched=mp2.group();
+            //System.out.println(">"+matched+"< Matched");
+            int beginindex=matched.indexOf(" ");
+            int endindex;
+            endindex=matched.length()-1;
+            String num=matched.substring(beginindex+1,endindex);
+            int index=Integer.parseInt(num)-1;
+            //System.out.println(index);
+            bfigs[index]=true;
+        }
+        for(int i=0;i<bfigs.length;i++)
+        {
+            if(!bfigs[i])
+                System.out.println(figcounts.get(i)+" Not Found");
+        }
+        
+    }
+    
+}
